@@ -8,6 +8,8 @@ import subprocess
 import numpy as np
 from scipy.io.wavfile import read
 import torch
+import commons
+from text import text_to_sequence
 
 MATPLOTLIB_FLAG = False
 
@@ -40,7 +42,6 @@ def load_checkpoint(checkpoint_path, model, optimizer=None):
     model.load_state_dict(new_state_dict)
   logger.info("Loaded checkpoint '{}' (iteration {})" .format(
     checkpoint_path, iteration))
-  return model, optimizer, learning_rate, iteration
 
 
 def save_checkpoint(model, optimizer, learning_rate, iteration, checkpoint_path):
@@ -224,6 +225,15 @@ def get_logger(model_dir, filename="train.log"):
   h.setFormatter(formatter)
   logger.addHandler(h)
   return logger
+
+
+
+def get_text(text, hps):
+    text_norm = text_to_sequence(text, hps.data.text_cleaners)
+    if hps.data.add_blank:
+        text_norm = commons.intersperse(text_norm, 0)
+    text_norm = torch.LongTensor(text_norm)
+    return text_norm
 
 
 class HParams():
